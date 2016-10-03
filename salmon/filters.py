@@ -25,3 +25,19 @@ def reject_html_email(func, error_code=550):
         return func(message, *args, **kwargs)
 
     return wrapped
+
+
+def reject_blocked_sender(func, spam_storage, error_code=550):
+    """Reject mail from a list of known spammers
+
+    ``spam_storage`` should implement ``__contains__``. Implementation details are
+    up to you.
+    """
+    def wrapped(message, *args, **kwargs):
+        sender = message.From
+        if sender in spam_storage:
+            raise SMTPError(error_code, "Email sender found in spammer list")
+
+        return func(message, *args, **kwargs)
+
+    return wrapped

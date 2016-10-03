@@ -84,3 +84,17 @@ def test_html_rejection():
     with assert_raises(server.SMTPError):
         func = filters.reject_html_email(lambda message: None)
         func(msg)
+
+
+def test_blocked_sender():
+    spammer_list = []
+    msg = mail.MailRequest("localhost", "you@example.com", "me@example.com", PLAIN)
+    func = filters.reject_blocked_sender(lambda message: None, spammer_list)
+    assert_equal(func(msg), None)
+
+    spammer_list.append("me@example.com")
+    assert_equal(func(msg), None)
+
+    spammer_list.append("you@example.com")
+    with assert_raises(server.SMTPError):
+        assert_equal(func(msg), None)
